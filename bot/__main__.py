@@ -157,12 +157,13 @@ def main() -> int:
         cfg = load_config(Path(args.config))
         telegram = None
         if not args.dry_run:
-            token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+            token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
             if not token:
                 raise FatalConfigError("TELEGRAM_BOT_TOKEN is not set")
             if cfg["channel"]["chat_id"] == "@your_channel":
                 raise FatalConfigError("config.yaml: set channel.chat_id to your channel")
-            telegram = Telegram(token, cfg["channel"]["chat_id"], os.environ.get("TELEGRAM_ADMIN_CHAT_ID", ""))
+            admin_id = os.environ.get("TELEGRAM_ADMIN_CHAT_ID", "").strip()
+            telegram = Telegram(token, cfg["channel"]["chat_id"], admin_id)
     except FatalConfigError as exc:
         log.error("%s", exc)
         return 2
