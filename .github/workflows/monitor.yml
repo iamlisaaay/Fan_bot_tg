@@ -1,0 +1,62 @@
+name: Monitor
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # GitHub may start this later than scheduled
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Never run two at once, otherwise the same post could be sent twice.
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - uses: denoland/setup-deno@v2   # yt-dlp needs a JS runtime for YouTube
+        with:
+          deno-version: v2.x
+
+      - name: Install
+        run: |
+          sudo apt-get install -y -qq ffmpeg > /dev/null
+          pip install -q -r requirements.txt
+
+      - name: Handle hand-written posts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
+        run: python -m bot.compose
+
+      - name: Run the bot
+        if: always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+        # Set the PLATFORMS repository variable to change this, e.g. to "youtube".
+        run: python -m bot --platforms "${{ vars.PLATFORMS || 'youtube,x' }}"
+
+      # Runs even after an error, so posts that did go out aren't sent again.
+      - name: Save state
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Update state [skip ci]"
+          git pull -q --rebase
+          git push -q

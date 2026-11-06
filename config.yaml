@@ -1,0 +1,68 @@
+# Головний файл налаштувань. Щоб додати чи прибрати сторінку, редагуй лише його.
+
+channel:
+  chat_id: "@madmans_esprit_news"           # юзернейм каналу, бот має бути його адміном; він же підпис під постом
+
+# Кого відстежувати. Кожен запис — це гурт або учасник.
+# Будь-яке поле можна прибрати, якщо такої сторінки немає.
+#
+# Заголовок поста залежить від поля "from":
+#   є from:   "Новий пост від Сомюля в X"
+#   немає:    "Новий пост на акаунті Madmans Esprit в X"
+accounts:
+  - name: "Madmans Esprit"                  # так буде підписаний пост
+    enabled: true                           # false = тимчасово вимкнути
+    instagram: "madmansesprit"              # без @
+    stories: true                           # false = лише пости, без сторіс
+    x: "MadmansEsprit"                      # без @
+    youtube: "@MadmansEsprit"               # @handle або ID каналу UC...
+
+  - name: "Kyuho"
+    from: "Кюхо"
+    instagram: "kyuhoofficial"
+    x: "kyuhoofficial"
+
+  - name: "Juho"
+    from: "Джухо"
+    instagram: "juh_o_o_fficial"
+    x: "juh_o_o_fficial"
+
+  - name: "Geon"
+    from: "Гона"
+    instagram: "geon__official"
+    x: "geon__official"
+
+  - name: "Limu"
+    from: "Ліму"
+    instagram: "limu_mme_official"
+    x: "limu_mme"
+    youtube: "@limudrummer"
+
+  - name: "Somyul"
+    from: "Сомюля"
+    instagram: "somyulofficial"
+    x: "somyulofficial"
+
+  - name: "Madmans Esprit Staff"
+    x: "Mme_staff"
+
+translation:
+  enabled: true
+  target: "uk"                              # мова перекладу
+  romanize: false                           # true = додати транскрипцію латиницею
+  skip_languages: ["uk"]                    # ці мови не перекладати
+
+youtube:
+  download_shorts: true                     # false = для Shorts теж лише прев'ю
+
+x:
+  include_retweets: false
+  include_replies: false
+
+instagram:
+  posts_to_check: 6                         # скільки останніх постів дивитись за запуск
+  delay_between_accounts: [15, 45]          # пауза між акаунтами, секунди (від, до)
+  start_jitter_seconds: 240                 # випадкова затримка перед стартом
+
+# Якщо платформа заблокувала або обмежила доступ, бот не чіпає її стільки годин.
+block_cooldown_hours: 6

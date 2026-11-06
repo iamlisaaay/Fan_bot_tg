@@ -1,0 +1,12 @@
+# Secrets: never commit these
+.env
+
+# Instagram runs on the home PC, its state stays there
+state/instagram.json
+
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+state/*.tmp
+logs/
