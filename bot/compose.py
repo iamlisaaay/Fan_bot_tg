@@ -179,8 +179,9 @@ def main() -> int:
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     load_dotenv(ROOT / ".env")
 
-    token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-    admin_id = os.environ.get("TELEGRAM_ADMIN_CHAT_ID", "")
+    # Pasting into GitHub secrets easily brings a stray space or line break along.
+    token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    admin_id = os.environ.get("TELEGRAM_ADMIN_CHAT_ID", "").strip()
     if not (token and admin_id):
         log.error("TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID must both be set")
         return 2
