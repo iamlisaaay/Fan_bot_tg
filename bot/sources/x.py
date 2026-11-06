@@ -68,7 +68,8 @@ class XSource:
 
     def __init__(self, cfg: dict):
         self.cfg = cfg.get("x", {})
-        token = os.environ.get("X_BEARER_TOKEN", "")
+        # Pasting a token into GitHub secrets easily brings a stray space or line break along.
+        token = os.environ.get("X_BEARER_TOKEN", "").strip()
         if not token:
             raise FatalConfigError("X_BEARER_TOKEN is not set")
         self.headers = {"Authorization": f"Bearer {token}"}

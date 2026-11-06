@@ -145,6 +145,11 @@ def test_x_timeline_parsing():
     assert post.media[1].url == "https://v/high.mp4" and post.media[1].alternatives == ["https://v/low.mp4"]
 
 
+def test_x_token_tolerates_stray_whitespace(monkeypatch):
+    monkeypatch.setenv("X_BEARER_TOKEN", " abc\n")
+    assert x_source.XSource({}).headers["Authorization"] == "Bearer abc"
+
+
 def test_x_first_run_reads_nothing(monkeypatch):
     monkeypatch.setenv("X_BEARER_TOKEN", "t")
     calls = []
