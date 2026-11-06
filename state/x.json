@@ -1,0 +1,32 @@
+{
+ "seen": {
+  "x:MadmansEsprit": [
+   "2117602704268915047",
+   "2117965084735459492",
+   "2118327477839819263"
+  ],
+  "x:kyuhoofficial": [],
+  "x:juh_o_o_fficial": [],
+  "x:geon__official": [],
+  "x:limu_mme": [],
+  "x:somyulofficial": [],
+  "x:Mme_staff": []
+ },
+ "meta": {
+  "x_id:MadmansEsprit": "998524306870026241",
+  "x_start:MadmansEsprit": "2026-11-02T18:22:53Z",
+  "x_id:kyuhoofficial": "1041921636528553984",
+  "x_start:kyuhoofficial": "2026-11-02T18:22:53Z",
+  "x_id:juh_o_o_fficial": "1057762466980016128",
+  "x_start:juh_o_o_fficial": "2026-11-02T18:22:53Z",
+  "x_id:geon__official": "1882697469425049600",
+  "x_start:geon__official": "2026-11-02T18:22:53Z",
+  "x_id:limu_mme": "1430352261016743938",
+  "x_start:limu_mme": "2026-11-02T18:22:53Z",
+  "x_id:somyulofficial": "1882693692370337793",
+  "x_start:somyulofficial": "2026-11-02T18:22:53Z",
+  "x_id:Mme_staff": "1996612127592001536",
+  "x_start:Mme_staff": "2026-11-02T18:22:53Z"
+ },
+ "blocked_until": 0.0
+}
