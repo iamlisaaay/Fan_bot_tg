@@ -51,6 +51,14 @@ def test_parse_translation_ignores_target_only_transliteration():
     assert parse_response(data) == Translation("привіт світ", "", "en")
 
 
+def test_fix_names_replaces_whole_words_only():
+    from bot.translate import fix_names
+    names = {"Сомюл": "Сомюль"}
+    assert fix_names("АРХІВ — Сомюл", names) == "АРХІВ — Сомюль"
+    assert fix_names("Сомюл, привіт", names) == "Сомюль, привіт"
+    assert fix_names("від Сомюля і Сомюль", names) == "від Сомюля і Сомюль"
+
+
 # --- formatting
 
 def test_render_layout_matches_the_channel_format():
