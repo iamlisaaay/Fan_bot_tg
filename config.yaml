@@ -51,6 +51,8 @@ translation:
   target: "uk"                              # мова перекладу
   romanize: false                           # true = додати транскрипцію латиницею
   skip_languages: ["uk"]                    # ці мови не перекладати
+  names:                                    # як перекладач пише ім'я → як має бути
+    "Сомюл": "Сомюль"
 
 youtube:
   download_shorts: true                     # false = для Shorts теж лише прев'ю

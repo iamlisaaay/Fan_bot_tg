@@ -6,6 +6,7 @@ the post simply goes out without a translation.
 from __future__ import annotations
 
 import logging
+import re
 from dataclasses import dataclass
 
 import requests
@@ -34,6 +35,13 @@ def parse_response(data: list) -> Translation:
     return Translation(text, " ".join(romanized).strip(), data[2] or "")
 
 
+def fix_names(text: str, names: dict) -> str:
+    """Replaces whole words only, so fixing "Сомюл" leaves "Сомюля" alone."""
+    for wrong, right in names.items():
+        text = re.sub(rf"(?<!\w){re.escape(wrong)}(?!\w)", right, text)
+    return text
+
+
 def translate(text: str, cfg: dict) -> Translation:
     if not text.strip() or not cfg.get("enabled", True):
         return Translation()
@@ -53,6 +61,7 @@ def translate(text: str, cfg: dict) -> Translation:
 
     if not cfg.get("romanize", True):
         result.romanized = ""
+    result.text = fix_names(result.text, cfg.get("names") or {})
     skip = {target, *cfg.get("skip_languages", [])}
     if result.source_lang in skip or result.text == text.strip():
         return Translation(source_lang=result.source_lang)
