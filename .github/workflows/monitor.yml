@@ -2,7 +2,8 @@ name: Monitor
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # GitHub may start this later than scheduled
+    # Every 15 minutes, off the busy top of the hour. GitHub may still start late.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 permissions:
