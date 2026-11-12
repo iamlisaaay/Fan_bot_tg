@@ -13,6 +13,10 @@ SEEN_LIMIT = 300
 
 
 class State:
+    # Called with the file path after every save; the server uses it to copy the
+    # file to GitHub, because Render's free disk is wiped on every restart.
+    on_save = None
+
     def __init__(self, path: Path):
         self.path = path
         self.data = {"seen": {}, "meta": {}, "blocked_until": 0.0}
@@ -47,3 +51,5 @@ class State:
         tmp = self.path.with_suffix(".tmp")
         tmp.write_text(json.dumps(self.data, ensure_ascii=False, indent=1), encoding="utf-8")
         os.replace(tmp, self.path)  # atomic, so a crash can't leave a broken file
+        if State.on_save:
+            State.on_save(self.path)

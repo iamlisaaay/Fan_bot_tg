@@ -77,6 +77,36 @@ gh repo create tg-fan-channel --public --source . --push
 
 Перший запуск запусти вручну: **Actions → Monitor → Run workflow**.
 
+## 5б. Render (основний спосіб)
+
+На Render бот працює постійно: на ручні пости відповідає одразу, а YouTube і X перевіряє кожні
+10 хвилин (`CHECK_EVERY_MINUTES`). Пам'ять про опубліковані пости він зберігає в цьому репозиторії, бо
+безкоштовний Render стирає файли при кожному перезапуску. Ці коміти мають позначку `[skip render]`,
+тож бот через них не перезапускається.
+
+1. **Токен GitHub для пам'яті.** [Створи токен](https://github.com/settings/personal-access-tokens/new):
+   доступ лише до `Fan_bot_tg`, у **Repository permissions** постав **Contents: Read and write**.
+2. **Сервіс.** На [render.com](https://render.com) увійди через GitHub, далі **New → Web Service** →
+   `Fan_bot_tg` → **Language: Docker** → **Instance type: Free**.
+3. **Змінні середовища (Environment Variables):**
+
+   | Назва | Значення |
+   |---|---|
+   | `TELEGRAM_BOT_TOKEN` | токен бота |
+   | `TELEGRAM_ADMIN_CHAT_ID` | твій ID |
+   | `X_BEARER_TOKEN` | токен X |
+   | `GITHUB_TOKEN` | токен із кроку 1 |
+   | `GITHUB_STATE_REPO` | `iamlisaaay/Fan_bot_tg` |
+
+4. **Пінгер.** Безкоштовний Render засинає через 15 хвилин без запитів. На [cron-job.org](https://cron-job.org)
+   створи завдання, яке кожні **10 хвилин** відкриває адресу сервісу (`https://….onrender.com/`).
+   Сторінка просто відповідає `ok`.
+
+Render дає 750 безкоштовних годин на місяць, а цілодобова робота займає до 744, тому інших безкоштовних
+сервісів на Render у тебе бути не повинно, інакше години закінчаться раніше.
+
+Поки працює Render, розклад GitHub Actions має бути вимкнений, інакше дві копії бота плутатимуть пам'ять.
+
 ## 6. Instagram на домашньому ПК (необов'язково)
 
 Зараз Instagram не використовується: пости дублюються в X, а сторіс не публікуються. Цей крок потрібен, лише

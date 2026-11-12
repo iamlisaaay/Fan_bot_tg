@@ -65,14 +65,14 @@ def test_render_layout_matches_the_channel_format():
     out = render(make_post("a < b"), Translation("т", "", "ko"), CHANNEL, has_media=False)
     assert out.caption == (
         "<b>L&lt;b&gt;</b>\n\n"
-        "a &lt; b\n-----\nт\n\n"
+        "a &lt; b\n\n<b>🇺🇦 Переклад:</b>\n<blockquote>т</blockquote>\n\n"
         '<a href="https://x.com/a?b=1&amp;c=2">Дивитись</a>\n@c'
     )
 
 
-def test_render_without_translation_has_no_separator():
+def test_render_without_translation_has_no_heading():
     out = render(make_post("hi"), Translation(), CHANNEL, has_media=False)
-    assert "-----" not in out.caption
+    assert "Переклад" not in out.caption
 
 
 def test_headline_person_vs_official():
@@ -130,8 +130,8 @@ def test_x_timeline_parsing():
     payload = {
         "data": [{
             "id": "10", "created_at": "2026-11-04T18:00:00.000Z",
-            "text": "short… https://t.co/m https://t.co/l",
-            "note_tweet": {"text": "full text https://t.co/m https://t.co/l", "entities": {"urls": [
+            "text": "short &amp; https://t.co/m https://t.co/l",
+            "note_tweet": {"text": "Juho &amp; Somyul https://t.co/m https://t.co/l", "entities": {"urls": [
                 {"url": "https://t.co/m", "media_key": "3_1"},
                 {"url": "https://t.co/l", "expanded_url": "https://site.com"},
             ]}},
@@ -147,7 +147,7 @@ def test_x_timeline_parsing():
         ]},
     }
     post = x_source.parse_timeline(payload, "k", {"name": "Band", "x": "user"})[0]
-    assert post.text == "full text  https://site.com"
+    assert post.text == "Juho & Somyul  https://site.com"
     assert post.url == "https://x.com/user/status/10"
     assert post.media[0].url == "https://p/1.jpg?name=orig" and post.media[0].thumbnail == "https://p/1.jpg"
     assert post.media[1].url == "https://v/high.mp4" and post.media[1].alternatives == ["https://v/low.mp4"]
