@@ -164,6 +164,13 @@ def test_render_respects_limits(size):
     assert without.followup == ""
 
 
+def test_translation_becomes_a_reply_when_the_caption_overflows():
+    out = render(make_post("о" * 700), Translation("п" * 700, "", "en"), CHANNEL, has_media=True)
+    assert "о" * 700 in out.caption and "Дивитись" in out.caption and "п" not in out.caption
+    assert visible(out.caption) <= CAPTION_LIMIT
+    assert out.followup.startswith("<b>🇺🇦 Переклад:</b>") and "п" * 700 in out.followup
+
+
 def test_long_text_moves_to_followup_and_keeps_links_on_media():
     out = render(make_post("з" * 2000), Translation(), CHANNEL, has_media=True)
     assert "Дивитись" in out.caption
