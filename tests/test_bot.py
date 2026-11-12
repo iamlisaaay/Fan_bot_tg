@@ -51,6 +51,79 @@ def test_parse_translation_ignores_target_only_transliteration():
     assert parse_response(data) == Translation("привіт світ", "", "en")
 
 
+def test_split_text_keeps_every_line_and_respects_the_limit():
+    from bot.translate import split_text
+    text = "a" * 30 + "\n\n" + ("word " * 40).strip() + "\nend\nfin"
+    chunks = split_text(text, 50)
+    assert all(len(chunk) <= 50 for _, chunk in chunks)
+    assert "".join(sep + chunk for sep, chunk in chunks) == text
+    assert split_text("short\ntext", 50) == [("", "short\ntext")]
+
+
+class FakeReply:
+    def __init__(self, data, status=200):
+        self._data, self.status_code = data, status
+
+    def json(self):
+        return self._data
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            import requests
+            raise requests.HTTPError(f"{self.status_code} Too Many Requests")
+
+
+def mymemory_reply(text, lang="en"):
+    return FakeReply({"responseStatus": 200, "responseData": {"translatedText": text, "detectedLanguage": lang}})
+
+
+def test_falls_back_to_mymemory_when_google_blocks(monkeypatch):
+    from bot import translate as tr
+    asked = []
+    monkeypatch.setattr(tr.requests, "post", lambda *a, **k: FakeReply([], 429))
+    monkeypatch.setattr(tr.requests, "get", lambda url, params, timeout: asked.append(params["q"]) or mymemory_reply("т:" + params["q"]))
+    result = tr.translate("hello\n\nworld", {"target": "uk", "romanize": False})
+    assert result.text == "т:hello\n\nworld" and result.source_lang == "en" and asked == ["hello\n\nworld"]
+
+
+def test_blank_lines_survive_mymemory_trimming_the_edges(monkeypatch):
+    from bot import translate as tr
+    monkeypatch.setattr(tr.requests, "post", lambda *a, **k: FakeReply([], 429))
+    monkeypatch.setattr(tr.requests, "get", lambda url, params, timeout: mymemory_reply(params["q"].strip().upper()))
+    text = "first!\n\n" + "long " * 120 + "\n\nlast"
+    out = tr.translate(text, {"target": "uk"}).text
+    assert out.startswith("FIRST!\n\n") and out.endswith("\n\nLAST") and out.count("\n") == 4
+
+
+def test_long_text_goes_to_mymemory_in_pieces(monkeypatch):
+    from bot import translate as tr
+    asked = []
+    monkeypatch.setattr(tr.requests, "post", lambda *a, **k: FakeReply([], 429))
+    monkeypatch.setattr(tr.requests, "get", lambda url, params, timeout: asked.append(params["q"]) or mymemory_reply("x"))
+    tr.translate("\n".join(["line of text number"] * 60), {"target": "uk"})
+    assert len(asked) > 1 and all(len(q) <= tr.MYMEMORY_LIMIT for q in asked)
+
+
+def test_ukrainian_text_is_not_translated_by_mymemory(monkeypatch):
+    from bot import translate as tr
+    monkeypatch.setattr(tr.requests, "post", lambda *a, **k: FakeReply([], 429))
+    monkeypatch.setattr(tr.requests, "get", lambda *a, **k: FakeReply(
+        {"responseStatus": 403, "responseDetails": "PLEASE SELECT TWO DISTINCT LANGUAGES", "responseData": {}}))
+    assert tr.translate("Дякую всім", {"target": "uk", "skip_languages": ["uk"]}).text == ""
+
+
+def test_post_goes_out_untranslated_when_both_fail(monkeypatch):
+    from bot import translate as tr
+    import requests
+    monkeypatch.setattr(tr.requests, "post", lambda *a, **k: FakeReply([], 429))
+
+    def down(*a, **k):
+        raise requests.ConnectionError("down")
+
+    monkeypatch.setattr(tr.requests, "get", down)
+    assert tr.translate("hello", {"target": "uk"}) == Translation()
+
+
 def test_fix_names_replaces_whole_words_only():
     from bot.translate import fix_names
     names = {"Сомюл": "Сомюль"}
