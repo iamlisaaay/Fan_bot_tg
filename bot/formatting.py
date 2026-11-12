@@ -4,8 +4,9 @@ Layout:
     <b>Новий пост від Сомюля в X</b>
 
     original text
-    -----
-    translation
+
+    🇺🇦 Переклад:       (bold)
+    | translation      (a quote block, so it stands apart from the original)
 
     Дивитись (link to the source)
     @channel
@@ -20,7 +21,7 @@ from .translate import Translation
 
 CAPTION_LIMIT = 1024
 MESSAGE_LIMIT = 4096
-PART_OVERHEAD = 8  # separator and line breaks that surround each body part
+PART_OVERHEAD = 18  # the translation heading and line breaks that surround each body part
 
 
 @dataclass
@@ -43,7 +44,7 @@ def _body_parts(post: Post, tr: Translation) -> list[tuple[str, str]]:
     if tr.romanized:
         parts.append((tr.romanized, "<i>{}</i>"))
     if tr.text:
-        parts.append((tr.text, "-----\n{}"))
+        parts.append((tr.text, "\n<b>🇺🇦 Переклад:</b>\n<blockquote>{}</blockquote>"))
     return parts
 
 

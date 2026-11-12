@@ -5,6 +5,7 @@ one we've seen. The very first run reads nothing: it just notes the current time
 """
 from __future__ import annotations
 
+import html
 import logging
 import os
 from datetime import datetime, timezone
@@ -24,7 +25,8 @@ def clean_text(tweet: dict) -> str:
         # Links to the post's own media are noise; other links get their real address.
         replacement = "" if link.get("media_key") else link.get("expanded_url", link["url"])
         text = text.replace(link["url"], replacement)
-    return text.strip()
+    # X sends "&", "<" and ">" as HTML codes; we escape them ourselves later.
+    return html.unescape(text).strip()
 
 
 def parse_media(item: dict) -> Media:
