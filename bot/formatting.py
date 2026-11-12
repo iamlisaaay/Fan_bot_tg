@@ -79,5 +79,12 @@ def render(post: Post, tr: Translation, channel: dict, has_media: bool) -> Rende
     if _visible_length(parts) <= limit - frame or not has_media:
         return Rendered(join(_render_body(parts, limit - frame)))
 
-    # Too long for a caption: media gets the short version, the text goes after it.
+    # Too long for a caption. Best case: the original stays with the media and the
+    # translation follows as a reply to it.
+    original, translation = parts[:-1], parts[-1:]
+    if tr.text and original and _visible_length(original) <= CAPTION_LIMIT - frame:
+        followup = _render_body(translation, MESSAGE_LIMIT - 10).lstrip("\n")
+        return Rendered(join(_render_body(original, CAPTION_LIMIT - frame)), followup)
+
+    # Even the original is too long: media gets the short version, all text goes after it.
     return Rendered(join(""), _render_body(parts, MESSAGE_LIMIT - 10))
