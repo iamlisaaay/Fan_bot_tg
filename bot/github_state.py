@@ -64,6 +64,12 @@ class GitHubState:
                 # is the newest, so take the current sha and write over it.
                 previous = self._fetch(name)
                 continue
-            response.raise_for_status()
+            if response.status_code >= 400:
+                # GitHub explains refusals (e.g. a token without write access) in "message".
+                try:
+                    reason = response.json().get("message", "")
+                except ValueError:
+                    reason = response.text[:200]
+                raise RuntimeError(f"GitHub {response.status_code}: {reason}")
             self.uploaded[name] = (content, response.json()["content"]["sha"])
             return
