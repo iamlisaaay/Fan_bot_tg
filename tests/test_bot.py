@@ -77,6 +77,32 @@ def mymemory_reply(text, lang="en"):
     return FakeReply({"responseStatus": 200, "responseData": {"translatedText": text, "detectedLanguage": lang}})
 
 
+def test_deepl_is_used_first_when_a_key_is_set(monkeypatch):
+    from bot import translate as tr
+    sent = []
+
+    def post(url, **kwargs):
+        sent.append((url, kwargs))
+        return FakeReply({"translations": [{"text": "Привіт, Сом’юль", "detected_source_language": "EN"}]})
+
+    monkeypatch.setenv("DEEPL_API_KEY", " abc:fx\n")
+    monkeypatch.setattr(tr.requests, "post", post)
+    result = tr.translate("Hi, Somyul", {"target": "uk", "names": {"Сом’юль": "Сомюль"}})
+    assert result.text == "Привіт, Сомюль" and result.source_lang == "en"
+    url, kwargs = sent[0]
+    assert url == "https://api-free.deepl.com/v2/translate"
+    assert kwargs["headers"]["Authorization"] == "DeepL-Auth-Key abc:fx"
+    assert kwargs["json"]["target_lang"] == "UK"
+
+
+def test_deepl_quota_falls_through_to_the_next_translator(monkeypatch):
+    from bot import translate as tr
+    monkeypatch.setenv("DEEPL_API_KEY", "abc:fx")
+    monkeypatch.setattr(tr.requests, "post", lambda url, **k: FakeReply({}, 456) if "deepl" in url else FakeReply([], 429))
+    monkeypatch.setattr(tr.requests, "get", lambda url, params, timeout: mymemory_reply("т"))
+    assert tr.translate("hello", {"target": "uk"}).text == "т"
+
+
 def test_falls_back_to_mymemory_when_google_blocks(monkeypatch):
     from bot import translate as tr
     asked = []

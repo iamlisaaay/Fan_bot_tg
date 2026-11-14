@@ -97,6 +97,12 @@ gh repo create tg-fan-channel --public --source . --push
    | `X_BEARER_TOKEN` | токен X |
    | `GITHUB_TOKEN` | токен із кроку 1 |
    | `GITHUB_STATE_REPO` | `iamlisaaay/Fan_bot_tg` |
+   | `DEEPL_API_KEY` | ключ DeepL API Free (див. нижче) |
+
+   **Чому DeepL:** безкоштовні перекладачі без ключа блокують сервери (Google відповідає Render `429`,
+   а денний ліміт MyMemory спільний для всіх користувачів тієї ж адреси). Безкоштовний план
+   [DeepL API](https://www.deepl.com/pro-api) працює з твоїм власним ключем. Ключ береться в акаунті
+   DeepL, у розділі **API Keys**. Без ключа бот пробує Google, а потім MyMemory.
 
 4. **Пінгер.** Безкоштовний Render засинає через 15 хвилин без запитів. На [cron-job.org](https://cron-job.org)
    створи завдання, яке кожні **10 хвилин** відкриває адресу сервісу (`https://….onrender.com/`).
