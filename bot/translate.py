@@ -1,12 +1,14 @@
-"""Free translation without keys: Google's public web endpoint, with MyMemory as a backup.
+"""Translation: DeepL when a key is set, then Google's public web endpoint, then MyMemory.
 
-Google often refuses servers (Render gets "429 Too Many Requests"), so MyMemory takes
-over then. Neither is official, so failures must never cost us a post: if both fail,
-the post simply goes out without a translation.
+The keyless services refuse busy servers: Google answers Render with "429 Too Many
+Requests", and MyMemory's daily allowance is shared by everyone on the same address.
+DeepL's free plan uses your own key, so it isn't affected. Failures must never cost us
+a post: if every translator fails, the post goes out without a translation.
 """
 from __future__ import annotations
 
 import logging
+import os
 import re
 from dataclasses import dataclass
 
@@ -75,6 +77,29 @@ def split_text(text: str, limit: int) -> list[tuple[str, str]]:
     return chunks
 
 
+def deepl(text: str, target: str) -> Translation:
+    key = os.environ.get("DEEPL_API_KEY", "").strip()
+    if not key:
+        raise TranslationError("DeepL: no DEEPL_API_KEY")
+    # Keys of the free plan end with ":fx" and use their own address.
+    host = "https://api-free.deepl.com" if key.endswith(":fx") else "https://api.deepl.com"
+    try:
+        response = requests.post(
+            f"{host}/v2/translate",
+            headers={"Authorization": f"DeepL-Auth-Key {key}"},
+            json={"text": [text], "target_lang": target.upper(), "preserve_formatting": True},
+            timeout=30,
+        )
+    except requests.RequestException as exc:
+        raise TranslationError(f"DeepL: {exc}") from None
+    if response.status_code == 456:
+        raise TranslationError("DeepL: the monthly free allowance is used up")
+    if response.status_code != 200:
+        raise TranslationError(f"DeepL: {response.status_code} {response.text[:200]}")
+    item = response.json()["translations"][0]
+    return Translation(item["text"].strip(), "", item.get("detected_source_language", "").lower())
+
+
 def google(text: str, target: str) -> Translation:
     try:
         response = requests.post(
@@ -117,7 +142,7 @@ def translate(text: str, cfg: dict) -> Translation:
         return Translation()
     target = cfg.get("target", "uk")
     result = None
-    for provider in (google, mymemory):
+    for provider in (deepl, google, mymemory):
         try:
             result = provider(text, target)
             break
